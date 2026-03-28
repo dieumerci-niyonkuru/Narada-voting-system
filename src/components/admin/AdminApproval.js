@@ -7,6 +7,7 @@ function AdminApproval() {
   const [pendingMembers, setPendingMembers] = useState([])
   const [approvedMembers, setApprovedMembers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchMembers()
@@ -22,7 +23,6 @@ function AdminApproval() {
   }
 
   const approveMember = async (userId, phone, fullName) => {
-    // Generate 8-character approval code
     const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
     let approvalCode = ''
     for (let i = 0; i < 8; i++) {
@@ -37,23 +37,43 @@ function AdminApproval() {
     if (error) {
       toast.error('Error approving member')
     } else {
-      alert(`‚úÖ MEMBER APPROVED!\n\nIzina: ${fullName || phone}\nTelefoni: +250 ${phone}\n\nÌ¥ë KODE YO KWINJIRA: ${approvalCode}\n\nIyi kode uyihe umunyamuryango kugirango yinjire.`)
+      alert(`‚úÖ MEMBER APPROVED!\n\nIzina: ${fullName || phone}\nTelefoni: +250 ${phone}\n\nÌ¥ë KODE YO KWINJIRA: ${approvalCode}`)
       toast.success(`‚úì ${fullName || phone} yemejwe!`)
       fetchMembers()
     }
   }
 
   const deleteMember = async (userId, phone, fullName) => {
-    if (window.confirm(`‚ö†Ô∏è GUSIBA ${fullName || phone}? Iki gikorwa ntigishobora guhindurwa!`)) {
+    if (window.confirm(`‚ö†Ô∏è GUSIBA ${fullName || phone}?\n\nIki gikorwa ntigishobora guhindurwa!\n\nBizasiba:\n- Konti ya member\n- Amajwi yose yatanze\n- Ibyanditswe byose`)) {
+      setDeleting(true)
       try {
-        await supabase.from('votes').delete().eq('user_id', userId)
-        const { error } = await supabase.from('profiles').delete().eq('id', userId)
-        if (error) throw error
-        toast.success(`Ì∑ëÔ∏è ${fullName || phone} yasibwe!`)
-        fetchMembers()
+        // First delete all votes by this user
+        const { error: voteError } = await supabase
+          .from('votes')
+          .delete()
+          .eq('user_id', userId)
+        
+        if (voteError) {
+          console.error('Error deleting votes:', voteError)
+        }
+        
+        // Then delete the profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', userId)
+        
+        if (profileError) {
+          toast.error('Error deleting member: ' + profileError.message)
+        } else {
+          toast.success(`Ì∑ëÔ∏è ${fullName || phone} yasibwe!`)
+          fetchMembers()
+        }
       } catch (err) {
+        console.error('Delete error:', err)
         toast.error('Error deleting member')
       }
+      setDeleting(false)
     }
   }
 
@@ -63,42 +83,92 @@ function AdminApproval() {
 
   return (
     <div className="grid lg:grid-cols-2 gap-6">
-      <div className="bg-yellow-50 rounded-xl p-4">
-        <h3 className="font-bold text-xl mb-4 text-yellow-700">‚è≥ Bategereje Kwemezwa ({pendingMembers.length})</h3>
+      {/* Pending Members */}
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <Icon name="pending" size="text-2xl" className="text-yellow-600" />
+            <h3 className="font-bold text-xl text-yellow-700">Bategereje Kwemezwa</h3>
+          </div>
+          <span className="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-sm font-bold">{pendingMembers.length}</span>
+        </div>
         {pendingMembers.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Nta muntu utegereje</p>
+          <p className="text-gray-500 text-center py-8">‚ú® Nta muntu utegereje</p>
         ) : (
-          pendingMembers.map(m => (
-            <div key={m.id} className="bg-white rounded-lg p-3 mb-2 shadow-sm">
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-semibold">Ì≥± +250 {m.phone}</div>
-                  <div className="text-sm text-gray-600">{m.full_name}</div>
-                  <div className="text-xs text-gray-400">Yanditswe: {new Date(m.created_at).toLocaleDateString()}</div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => approveMember(m.id, m.phone, m.full_name)} className="bg-green-600 text-white px-3 py-1 rounded-lg text-sm">‚úì Emeza</button>
-                  <button onClick={() => deleteMember(m.id, m.phone, m.full_name)} className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm">‚úó Siba</button>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {pendingMembers.map(m => (
+              <div key={m.id} className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-semibold flex items-center gap-2">
+                      <span className="text-xl">Ì≥±</span> +250 {m.phone}
+                    </div>
+                    <div className="text-sm text-gray-600">{m.full_name}</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      Yanditswe: {new Date(m.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => approveMember(m.id, m.phone, m.full_name)} 
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1"
+                    >
+                      <Icon name="approve" /> Emeza
+                    </button>
+                    <button 
+                      onClick={() => deleteMember(m.id, m.phone, m.full_name)} 
+                      disabled={deleting}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1"
+                    >
+                      <Icon name="delete" /> Siba
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
-      <div className="bg-green-50 rounded-xl p-4">
-        <h3 className="font-bold text-xl mb-4 text-green-700">‚úÖ Abemewe ({approvedMembers.length})</h3>
+
+      {/* Approved Members */}
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <Icon name="approved" size="text-2xl" className="text-green-600" />
+            <h3 className="font-bold text-xl text-green-700">Abemewe</h3>
+          </div>
+          <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-bold">{approvedMembers.length}</span>
+        </div>
         {approvedMembers.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Nta munyamuryango wemewe</p>
+          <p className="text-gray-500 text-center py-8">Ì≥≠ Nta munyamuryango wemewe</p>
         ) : (
-          approvedMembers.map(m => (
-            <div key={m.id} className="bg-white rounded-lg p-2 mb-2 flex justify-between items-center">
-              <div>
-                <div className="font-semibold">Ì≥± +250 {m.phone}</div>
-                <div className="text-sm text-gray-600">{m.full_name}</div>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {approvedMembers.map(m => (
+              <div key={m.id} className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-semibold flex items-center gap-2">
+                      <span className="text-xl">Ì≥±</span> +250 {m.phone}
+                    </div>
+                    <div className="text-sm text-gray-600">{m.full_name}</div>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <div className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs font-mono font-bold">
+                      Kode: {m.approval_code}
+                    </div>
+                    <button 
+                      onClick={() => deleteMember(m.id, m.phone, m.full_name)} 
+                      disabled={deleting}
+                      className="text-red-600 hover:text-red-800 text-sm font-bold px-2 py-1 rounded-lg hover:bg-red-50 transition flex items-center gap-1"
+                      title="Siba umunyamuryango"
+                    >
+                      <Icon name="delete" /> Siba
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Kode: {m.approval_code}</div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import SocialFooter from '../common/SocialFooter'
 import Icon from '../common/Icon'
-import MemberReports from './MemberReports'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 function MemberDashboard({ user }) {
@@ -22,24 +21,21 @@ function MemberDashboard({ user }) {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [showReports, setShowReports] = useState(false)
-  const [trend, setTrend] = useState({ direction: 'stable', change: 0 })
   const navigate = useNavigate()
 
   const COLORS = ['#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#06B6D4']
 
   useEffect(() => {
     fetchAllData()
-    // Update online status every 30 seconds
     updateOnlineStatus()
     const interval = setInterval(() => {
-      fetchAllData()
+      fetchVotesOnly()
       updateOnlineStatus()
     }, 30000)
     return () => clearInterval(interval)
   }, [])
 
   const updateOnlineStatus = async () => {
-    // Update user's last active time
     await supabase
       .from('profiles')
       .update({ last_login: new Date().toISOString() })
@@ -62,15 +58,21 @@ function MemberDashboard({ user }) {
       const { data: votingStatus } = await supabase.from('voting_status').select('is_active').single()
       const votingActive = votingStatus?.is_active !== false
       
-      const { data: profiles } = await supabase
+      // Get all approved members
+      const { data: allMembers } = await supabase
         .from('profiles')
         .select('id')
         .eq('role', 'member')
         .eq('is_approved', true)
+      const totalMembers = allMembers?.length || 0
       
-      const { count: totalVoted } = await supabase
+      // Get unique voters (count distinct user_id in votes)
+      const { data: uniqueVoters } = await supabase
         .from('votes')
-        .select('*', { count: 'exact', head: true })
+        .select('user_id')
+      const uniqueUserIds = new Set()
+      uniqueVoters?.forEach(v => uniqueUserIds.add(v.user_id))
+      const totalVoted = Math.min(uniqueUserIds.size, totalMembers)
       
       // Get online members
       const onlineCount = await getOnlineMembers()
@@ -89,13 +91,6 @@ function MemberDashboard({ user }) {
         .maybeSingle()
       
       setPublishedPosition(position || null)
-      
-      // Get previous total votes to calculate trend
-      const prevTotalVotes = stats.totalVoted
-      const change = totalVoted - prevTotalVotes
-      const direction = change > 0 ? 'up' : change < 0 ? 'down' : 'stable'
-      
-      setTrend({ direction, change: Math.abs(change) })
       
       // Get candidates for published position
       if (position) {
@@ -124,8 +119,8 @@ function MemberDashboard({ user }) {
       }
       
       setStats({
-        totalMembers: profiles?.length || 0,
-        totalVoted: totalVoted || 0,
+        totalMembers: totalMembers,
+        totalVoted: totalVoted,
         votingActive: votingActive,
         onlineMembers: onlineCount,
         activeSessions: sessions?.length || 0
@@ -136,6 +131,35 @@ function MemberDashboard({ user }) {
     setLoading(false)
   }
 
+  const fetchVotesOnly = async () => {
+    try {
+      // Get unique voters
+      const { data: uniqueVoters } = await supabase
+        .from('votes')
+        .select('user_id')
+      const uniqueUserIds = new Set()
+      uniqueVoters?.forEach(v => uniqueUserIds.add(v.user_id))
+      const totalVoted = Math.min(uniqueUserIds.size, stats.totalMembers)
+      
+      // Get candidates with updated votes
+      if (publishedPosition) {
+        const { data: candidatesData } = await supabase
+          .from('candidates')
+          .select('*')
+          .eq('position_id', publishedPosition.id)
+          .order('vote_count', { ascending: false })
+        setCandidates(candidatesData || [])
+      }
+      
+      setStats(prev => ({
+        ...prev,
+        totalVoted: totalVoted
+      }))
+    } catch (err) {
+      console.error('Error refreshing votes:', err)
+    }
+  }
+
   const refreshData = async () => {
     setRefreshing(true)
     await fetchAllData()
@@ -143,6 +167,7 @@ function MemberDashboard({ user }) {
     setRefreshing(false)
   }
 
+  // Participation rate - NEVER exceeds 100%
   const participationRate = stats.totalMembers > 0 
     ? ((stats.totalVoted / stats.totalMembers) * 100).toFixed(1) 
     : 0
@@ -224,30 +249,32 @@ function MemberDashboard({ user }) {
           {stats.votingActive ? 'AMATORA AKOMEJE! Murashobora gutora.' : 'AMATORA YAHAGARITSWE! Rindira ubuyobozi.'}
         </div>
 
+        {/* Statistics Cards - Correct Logic */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-xl shadow p-3 text-center">
             <Icon name="members" size="text-2xl" className="mx-auto mb-1" />
-            <div className="text-xl font-bold text-indigo-600">{stats.totalMembers}</div>
+            <div className="text-2xl font-bold text-indigo-600">{stats.totalMembers}</div>
             <div className="text-xs text-gray-500">Abanyamuryango</div>
           </div>
           <div className="bg-white rounded-xl shadow p-3 text-center">
             <Icon name="voteButton" size="text-2xl" className="mx-auto mb-1" />
-            <div className="text-xl font-bold text-green-600">{stats.totalVoted}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.totalVoted}</div>
             <div className="text-xs text-gray-500">Abatoye</div>
-            {trend.direction === 'up' && (
-              <div className="text-xs text-green-600 flex items-center justify-center gap-1 mt-1">
-                <Icon name="trend-up" /> +{trend.change}
-              </div>
+            {stats.totalVoted > stats.totalMembers && (
+              <div className="text-xs text-red-500 mt-1">⚠️ Error: Abatoye barenze</div>
             )}
           </div>
           <div className="bg-white rounded-xl shadow p-3 text-center">
             <Icon name="chart" size="text-2xl" className="mx-auto mb-1" />
-            <div className="text-xl font-bold text-orange-600">{participationRate}%</div>
+            <div className="text-2xl font-bold text-orange-600">{participationRate}%</div>
             <div className="text-xs text-gray-500">Ubwitabire</div>
+            {participationRate > 100 && (
+              <div className="text-xs text-red-500 mt-1">⚠️ Error: Ijanisha rirenze 100%</div>
+            )}
           </div>
           <div className="bg-white rounded-xl shadow p-3 text-center">
             <Icon name="online" size="text-2xl" className="mx-auto mb-1 text-green-600" />
-            <div className="text-xl font-bold text-green-600">{stats.onlineMembers}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.onlineMembers}</div>
             <div className="text-xs text-gray-500">Abari Kuri Siti</div>
           </div>
         </div>
