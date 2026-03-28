@@ -72,37 +72,13 @@ function MemberLogin({ onLogin, onShowRegister }) {
         return
       }
 
-      // Sign in with the auth user
-      const tempEmail = `${phone}@narada.member`
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: tempEmail,
-        password: approvalCode
-      })
-
-      if (signInError) {
-        // Try to sign up if sign in fails
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: tempEmail,
-          password: approvalCode,
-          options: {
-            data: { phone: phone, full_name: profile.full_name }
-          }
-        })
-        
-        if (signUpError) {
-          console.error('Sign up error:', signUpError)
-          toast.error('Login error. Please contact admin.')
-          setLoading(false)
-          return
-        }
-      }
-
       // Update last login
       await supabase
         .from('profiles')
         .update({ last_login: new Date().toISOString() })
         .eq('id', profile.id)
 
+      // Create session in localStorage
       const sessionData = {
         user: profile,
         loggedInAt: new Date().toISOString()
@@ -154,6 +130,7 @@ function MemberLogin({ onLogin, onShowRegister }) {
                       required
                     />
                   </div>
+                  <p className="text-xs text-gray-500 mt-2">Shyiramo numero yawe ya telefoni (utagira 0 mbere)</p>
                 </div>
                 <button
                   type="submit"
@@ -198,6 +175,7 @@ function MemberLogin({ onLogin, onShowRegister }) {
                   autoFocus
                   required
                 />
+                <p className="text-xs text-gray-500 mt-2 text-center">Kode utanga ubuyobozi</p>
               </div>
               
               <button

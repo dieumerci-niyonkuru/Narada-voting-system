@@ -60,27 +60,27 @@ function App() {
         {user && (
           <nav className="bg-white shadow-lg sticky top-0 z-50">
             <div className="container mx-auto px-4">
-              <div className="flex justify-between items-center py-3">
+              <div className="flex justify-between items-center py-4">
                 <Link to="/dashboard" className="flex items-center space-x-2">
                   <span className="text-2xl">Ì∑≥Ô∏è</span>
                   <span className="font-bold text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     Narada Voting
                   </span>
                 </Link>
-                <div className="flex space-x-4">
+                <div className="flex space-x-6">
                   <Link to="/dashboard" className="text-gray-700 hover:text-indigo-600 font-medium transition">Urubuga</Link>
                   <Link to="/vote" className="text-gray-700 hover:text-indigo-600 font-medium transition">Gutora</Link>
                   {userRole === 'admin' && (
                     <Link to="/admin" className="text-gray-700 hover:text-indigo-600 font-medium transition">Ubuyobozi</Link>
                   )}
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-4">
                   <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">
                     {userRole === 'admin' ? 'Ì±ë Ubuyobozi' : `Ì≥± ${user.phone}`}
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm"
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
                   >
                     Sohoka
                   </button>

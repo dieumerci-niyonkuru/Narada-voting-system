@@ -4,12 +4,12 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import SocialFooter from './common/SocialFooter'
 import Icon from './common/Icon'
-import MembersManagement from './admin/MembersManagement'
+import AdminApproval from './admin/AdminApproval'
 import PositionsManagement from './admin/PositionsManagement'
 import ReportsExport from './admin/ReportsExport'
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState('positions')
+  const [activeTab, setActiveTab] = useState('approval')
   const [adminUser, setAdminUser] = useState(null)
   const [votingActive, setVotingActive] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -40,7 +40,7 @@ function AdminPanel() {
       const { data: record } = await supabase.from('voting_status').select('id').single()
       await supabase.from('voting_status').update({ is_active: newStatus }).eq('id', record.id)
       setVotingActive(newStatus)
-      toast.success(newStatus ? 'Amatora Yatangiye!' : 'Amatora Yahagaritswe!')
+      toast.success(newStatus ? 'AMATORA YATANGIJE!' : 'AMATORA YAHAGARITSWE!')
     } catch (err) {
       toast.error('Error toggling voting')
     }
@@ -55,8 +55,8 @@ function AdminPanel() {
   }
 
   const tabs = [
+    { id: 'approval', name: 'Abanyamuryango', icon: 'members' },
     { id: 'positions', name: 'Imyanya', icon: 'positions' },
-    { id: 'members', name: 'Abanyamuryango', icon: 'members' },
     { id: 'reports', name: 'Raporo', icon: 'reports' }
   ]
 
@@ -126,8 +126,8 @@ function AdminPanel() {
 
       <div className="flex-grow container mx-auto px-4 py-6">
         <div className="bg-white rounded-xl shadow-lg p-5">
+          {activeTab === 'approval' && <AdminApproval />}
           {activeTab === 'positions' && <PositionsManagement />}
-          {activeTab === 'members' && <MembersManagement />}
           {activeTab === 'reports' && <ReportsExport />}
         </div>
       </div>

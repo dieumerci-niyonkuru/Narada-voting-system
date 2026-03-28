@@ -35,11 +35,11 @@ function MemberRegister({ onBack, onRegisterSuccess }) {
 
     try {
       // Check if phone already registered
-      const { data: existing, error: checkError } = await supabase
+      const { data: existing } = await supabase
         .from('profiles')
         .select('phone')
         .eq('phone', phone)
-        .maybeSingle()
+        .single()
 
       if (existing) {
         toast.error('❌ Iyi numero imaze kwandikwa. Kwinjira hanyuma.')
@@ -47,37 +47,14 @@ function MemberRegister({ onBack, onRegisterSuccess }) {
         return
       }
 
-      // Generate a new UUID for the member
+      // Generate a unique ID for the member (no auth user needed)
       const tempId = crypto.randomUUID()
-      const tempEmail = `${phone}@narada.member`
-      const tempPassword = Math.random().toString(36).substring(2, 10) + '123!'
 
-      // Create auth user first
-      const { data: authUser, error: authError } = await supabase.auth.signUp({
-        email: tempEmail,
-        password: tempPassword,
-        options: {
-          data: { 
-            phone: phone,
-            full_name: fullName
-          }
-        }
-      })
-
-      if (authError) {
-        console.error('Auth error:', authError)
-        toast.error('Registration error: ' + authError.message)
-        setLoading(false)
-        return
-      }
-
-      const userId = authUser?.user?.id || tempId
-
-      // Create profile with the user ID
+      // Create profile directly without auth user
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: userId,
+          id: tempId,
           phone: phone,
           full_name: fullName,
           email: email || null,
@@ -139,6 +116,7 @@ function MemberRegister({ onBack, onRegisterSuccess }) {
                   required
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">Shyiramo numero yawe ya telefoni (utagira 0 mbere)</p>
             </div>
 
             <div className="mb-4">
@@ -166,6 +144,7 @@ function MemberRegister({ onBack, onRegisterSuccess }) {
                 placeholder="your@email.com"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+              <p className="text-xs text-gray-500 mt-1">Ntabwo ari ngombwa, ariko uzakira amakuru</p>
             </div>
 
             <button

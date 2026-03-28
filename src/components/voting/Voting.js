@@ -28,6 +28,7 @@ function Voting({ user }) {
   const fetchData = async () => {
     setLoading(true)
     try {
+      // Get published position
       const { data: position } = await supabase
         .from('positions')
         .select('*')
@@ -36,6 +37,7 @@ function Voting({ user }) {
       setPublishedPosition(position || null)
       
       if (position) {
+        // Get candidates
         const { data: candidatesData } = await supabase
           .from('candidates')
           .select('*')
@@ -43,6 +45,7 @@ function Voting({ user }) {
           .order('vote_count', { ascending: false })
         setCandidates(candidatesData || [])
         
+        // Check if user has voted
         const { data: vote } = await supabase
           .from('votes')
           .select('candidate_id')
@@ -84,6 +87,7 @@ function Voting({ user }) {
     setVotingLoading(true)
     
     try {
+      // Insert vote
       const { error: insertError } = await supabase
         .from('votes')
         .insert({
@@ -98,19 +102,26 @@ function Voting({ user }) {
         return
       }
 
+      // Get current candidate to update vote count
       const currentCandidate = candidates.find(c => c.id === candidateId)
       const newVoteCount = (currentCandidate?.vote_count || 0) + 1
       
-      await supabase
+      // Update vote count
+      const { error: updateError } = await supabase
         .from('candidates')
         .update({ vote_count: newVoteCount })
         .eq('id', candidateId)
+      
+      if (updateError) {
+        console.error('Update error:', updateError)
+      }
       
       setHasVoted(true)
       setVotedCandidate(currentCandidate)
       toast.success(`✓ Watora: ${candidateName}! Amajwi yawe yanditswe.`)
       
-      setTimeout(() => navigate('/dashboard'), 1500)
+      // Refresh data
+      fetchData()
     } catch (err) {
       toast.error('Error casting vote')
     }
@@ -153,6 +164,8 @@ function Voting({ user }) {
     )
   }
 
+  const totalVotes = candidates.reduce((sum, c) => sum + (c.vote_count || 0), 0)
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <div className="flex-grow container mx-auto px-4 py-6">
@@ -189,12 +202,10 @@ function Voting({ user }) {
             <div className="text-center py-8 text-gray-500">
               <Icon name="candidate" size="text-4xl" className="mx-auto mb-2" />
               <p>Nta bakandida bihari muri uyu mwanya</p>
-              <p className="text-sm">Ubuyobozi buzakongeraho abakandida vuba</p>
             </div>
           ) : (
             <div className="space-y-4">
               {candidates.map(candidate => {
-                const totalVotes = candidates.reduce((sum, c) => sum + (c.vote_count || 0), 0)
                 const percentage = totalVotes > 0 ? ((candidate.vote_count / totalVotes) * 100).toFixed(1) : 0
                 const isLeader = candidate.vote_count === Math.max(...candidates.map(c => c.vote_count), 0) && candidate.vote_count > 0
                 
