@@ -10,38 +10,27 @@ function LandingPage() {
         {/* Header with Logo */}
         <div className="flex items-center justify-between mb-12">
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-2xl backdrop-blur">
-              <Icon name="vote" size="text-2xl" className="text-white" />
+            <div className="flex items-center justify-center size-32 rounded-2xl backdrop-blur">
+              <img
+                src="logo.webp"
+                alt="narada-logo"
+                className="object-cover w-full rounded-md"
+              />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Narada Voting</h1>
-              <p className="text-sm text-indigo-200">Komite 2026</p>
+              <h1 className="text-2xl font-bold text-white">
+                Narada comittee Voting
+              </h1>
             </div>
           </Link>
           <div className="flex gap-3">
             <a
-              href="https://github.com/dieumerci-niyonkuru"
+              href="https://www.youtube.com/@naradachoircep"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-10 h-10 transition rounded-full bg-white/20 hover:bg-white/30"
+              className="flex items-center justify-center p-3 font-semibold text-gray-300 transition rounded-full bg-white/20 hover:bg-white/30 animate-pulse"
             >
-              <Icon name="github" className="text-white" />
-            </a>
-            <a
-              href="https://www.linkedin.com/in/dieu-merci-niyonkuru-7725b1363/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-10 h-10 transition rounded-full bg-white/20 hover:bg-white/30"
-            >
-              <Icon name="linkedin" className="text-white" />
-            </a>
-            <a
-              href="https://x.com/dieumercin21"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-10 h-10 transition rounded-full bg-white/20 hover:bg-white/30"
-            >
-              <Icon name="twitter" className="text-white" />
+              Youtube channel
             </a>
           </div>
         </div>
@@ -50,10 +39,10 @@ function LandingPage() {
         <div className="mb-12 text-center text-white">
           <Icon name="vote" size="text-7xl" className="mb-6 animate-bounce" />
           <h1 className="mb-4 text-5xl font-bold md:text-6xl">
-            Narada Voting Committee 2026
+            Narada Voting Committee {new Date().getFullYear()}
           </h1>
           <p className="max-w-2xl mx-auto text-xl text-indigo-100">
-            Amatora yizewe kandi yorohereza buri munyarwanda. Iyandikishe,
+            Amatora yizewe kandi yorohereza buri muririmbyi. Iyandikishe,
             emezwa, hanyuma utore umukandida wawe mu buryo bworoshye kandi
             bwihuse.
           </p>
@@ -68,7 +57,7 @@ function LandingPage() {
                 <div className="p-8 text-center text-white bg-gradient-to-r from-indigo-500 to-slate-600">
                   <Icon name="member" size="text-6xl" className="mb-4" />
                   <h2 className="mb-2 text-3xl font-bold">
-                    Injira nk'Umuryango
+                    Injira nk'umuririmbyi
                   </h2>
                   <p className="text-emerald-100">Member Login</p>
                 </div>
@@ -88,7 +77,7 @@ function LandingPage() {
                 <div className="p-8 text-center text-white bg-gradient-to-r from-gray-600 to-indigo-600">
                   <Icon name="admin" size="text-6xl" className="mb-4" />
                   <h2 className="mb-2 text-3xl font-bold">
-                    Injira nk'Ubuyobozi
+                    Injira nk'Umuyobozi
                   </h2>
                   <p className="text-amber-100">Admin Portal</p>
                 </div>
@@ -161,10 +150,7 @@ function LandingPage() {
             </a>
           </div>
           <p className="text-sm text-white/40">
-            © 2026 Narada Voting Committee. Amatora y'ikinyarwanda
-          </p>
-          <p className="mt-2 text-xs text-white/30">
-            Developed by Dieumerci Niyonkuru
+            ©Allright reserved. 2026 Narada Voting Committee.
           </p>
         </div>
       </div>

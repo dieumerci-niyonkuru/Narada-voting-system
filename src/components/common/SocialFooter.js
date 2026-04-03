@@ -9,7 +9,7 @@ function SocialFooter() {
           <div className="text-center md:text-left">
             <div className="flex items-center gap-2 mb-2">
               <Icon name="voteButton" size="text-2xl" />
-              <span className="font-bold">Narada Voting Committee 2026</span>
+              <span className="font-bold">Narada Voting Committee </span>
             </div>
           </div>
 
@@ -41,8 +41,7 @@ function SocialFooter() {
           </div>
         </div>
         <div className="pt-4 mt-6 text-xs text-center text-gray-500 border-t border-gray-800">
-          <p>© 2026 Narada Voting Committee. Amatora y'ikinyarwanda</p>
-          <p className="mt-1">Yakozwe na Dieumerci Niyonkuru</p>
+          <p>© {new Date().getFullYear()} Narada Voting Committee.</p>
         </div>
       </div>
     </footer>

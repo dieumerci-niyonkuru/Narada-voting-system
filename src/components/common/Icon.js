@@ -1,18 +1,69 @@
-import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faChartBar, faUsers, faList, faVoteYea, faTrophy, faFileAlt,
-  faArrowLeft, faHome, faSignOutAlt, faCheckCircle, faTimesCircle,
-  faExclamationTriangle, faInfoCircle, faPlay, faStop, faUser,
-  faUserCog, faPhone, faEnvelope, faLock, faUnlock, faEye, faEyeSlash,
-  faPlus, faEdit, faTrash, faSave, faTimes, faCheck, faCalendarAlt,
-  faClock, faGithub, faLinkedin, faTwitter, faCog, faQuestionCircle,
-  faSearch, faFilter, faDownload, faUpload, faSync, faSpinner,
-  faChartPie, faBarChart, faUserPlus, faUserCheck, faUserMinus,
-  faKey, faIdCard, faAddressCard, faClipboardList, faPoll, faPollH,
-  faArrowUp, faArrowDown, faWifi, faChartLine
-} from '@fortawesome/free-solid-svg-icons'
-import { faGithub as faGithubBrand, faLinkedin as faLinkedinBrand, faTwitter as faTwitterBrand } from '@fortawesome/free-brands-svg-icons'
+  faChartBar,
+  faUsers,
+  faList,
+  faVoteYea,
+  faTrophy,
+  faFileAlt,
+  faArrowLeft,
+  faHome,
+  faSignOutAlt,
+  faCheckCircle,
+  faTimesCircle,
+  faExclamationTriangle,
+  faInfoCircle,
+  faPlay,
+  faStop,
+  faUser,
+  faUserCog,
+  faPhone,
+  faEnvelope,
+  faLock,
+  faUnlock,
+  faEye,
+  faEyeSlash,
+  faPlus,
+  faEdit,
+  faTrash,
+  faSave,
+  faTimes,
+  faCheck,
+  faCalendarAlt,
+  faClock,
+  faGithub,
+  faLinkedin,
+  faTwitter,
+  faCog,
+  faQuestionCircle,
+  faSearch,
+  faFilter,
+  faDownload,
+  faUpload,
+  faSync,
+  faSpinner,
+  faChartPie,
+  faBarChart,
+  faUserPlus,
+  faUserCheck,
+  faUserMinus,
+  faKey,
+  faIdCard,
+  faAddressCard,
+  faClipboardList,
+  faPoll,
+  faPollH,
+  faArrowUp,
+  faArrowDown,
+  faWifi,
+  faChartLine,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  faGithub as faGithubBrand,
+  faLinkedin as faLinkedinBrand,
+  faTwitter as faTwitterBrand,
+} from "@fortawesome/free-brands-svg-icons";
 
 const iconMap = {
   dashboard: faChartBar,
@@ -83,22 +134,22 @@ const iconMap = {
   trendUp: faArrowUp,
   trendDown: faArrowDown,
   online: faWifi,
-  chartLine: faChartLine
-}
+  chartLine: faChartLine,
+};
 
 function Icon({ name, className = "", size = "text-base", spin = false }) {
-  const icon = iconMap[name]
-  
+  const icon = iconMap[name];
+
   if (!icon) {
-    return <span className={className}>í³Œ</span>
+    return <span className={className}>âœ…</span>;
   }
-  
+
   return (
-    <FontAwesomeIcon 
-      icon={icon} 
-      className={`${className} ${spin ? 'animate-spin' : ''}`}
+    <FontAwesomeIcon
+      icon={icon}
+      className={`${className} ${spin ? "animate-spin" : ""}`}
     />
-  )
+  );
 }
 
-export default Icon
+export default Icon;
